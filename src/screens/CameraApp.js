@@ -11,7 +11,6 @@ export default function CameraApp({ navigation}) {
 
     const {hasPermission, requestPermission} = useCameraPermission();
     const device = useCameraDevice('back');
-    const [isCameraOpen, setCameraOpen] = useState(false);
   
 
 
@@ -45,27 +44,9 @@ export default function CameraApp({ navigation}) {
       }
     };
 
-    return (
-        // <View style={styles.container}>
-        //     <Text style={styles.text}>Camera</Text>
-        //     <Pressable style={styles.botao} onPress={pressHandler}>
-        //         <Text style={styles.textbotao}>Voltar</Text>
-        //     </Pressable>
-        // </View>
+    return (        
         <View style={styles.container}>
-          {!isCameraOpen ? (
-            <View style={styles.content}>
-              <Text>Pressione o botão para abrir a câmera</Text>
-              <TouchableOpacity onPress={openCamera} style={styles.button}>
-                <Text style={styles.buttonText}>Abrir Câmera</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <Camera device={device} style={StyleSheet.absoluteFill} isActive={true}>          
-            </Camera>       
-            
-            
-          )}
+            <Camera device={device} style={StyleSheet.absoluteFill} isActive={true}></Camera>             
         </View>
     );
 }

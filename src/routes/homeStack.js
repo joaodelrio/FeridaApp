@@ -8,7 +8,7 @@ const screens = {
         screen: Home,
     },
     Camera: {
-        screen: CameraApp,
+        screen: Camera,
     },
 };
 
