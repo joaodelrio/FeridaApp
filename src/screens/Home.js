@@ -1,13 +1,22 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, Button, Pressable } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Pressable, Alert, Platform, BackHandler} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 
-export default function Home({ navigation }) {
 
+
+export default function Home({ navigation }) {
     const pressHandler = () => {
         navigation.navigate('Camera');
         //navigation.push('Camera');
     }
+    const exitHandler = () => {
+        if (Platform.OS === 'android') {
+            Alert.alert('Sair', 'Deseja sair do aplicativo?', [
+                {text: 'Sim', onPress: () => BackHandler.exitApp()},
+                {text: 'Não', onPress: () => console.log('Cancelado')},
+            ]);
+        }
+      };
 
     return (
         <View style={styles.container}>
@@ -17,7 +26,7 @@ export default function Home({ navigation }) {
                 <Pressable style={styles.botao} onPress={pressHandler}>
                     <Text style={styles.textbotao}>Abrir câmera</Text>
                 </Pressable>
-                <Pressable style={styles.botao}>
+                <Pressable style={styles.botao} onPress={exitHandler}>
                     <Text style={styles.textbotao}>Sair</Text>
                 </Pressable>
             </View>
@@ -36,7 +45,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     titulo: {
-        paddingTop: 115,
+        paddingTop: 95,
         paddingBottom: 50,
         fontSize: 37,
         fontWeight: 'bold',
