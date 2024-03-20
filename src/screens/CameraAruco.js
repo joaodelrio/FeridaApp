@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import { View, Text, StyleSheet, StatusBar, Button, Pressable, ActivityIndicator, GestureResponderEvent, TouchableOpacity } from 'react-native';
 import { globalStyles } from '../styles/global';
 import { useCameraDevice, useCameraPermission, Camera } from 'react-native-vision-camera';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function CameraAruco({ navigation}) {
     const backHandler = () => {
@@ -13,6 +14,7 @@ export default function CameraAruco({ navigation}) {
     const device = useCameraDevice('back');
     const [imageSource, setImageSource] = useState('');
     const camera = useRef(null);
+    const [flashMode, setFlashMode] = useState('off');
     
 
     useEffect(() => {
@@ -53,11 +55,26 @@ export default function CameraAruco({ navigation}) {
         }
     }
 
+    const flashHandler = () => {
+        if(flashMode == 'off') {
+            setFlashMode('on');
+        } else {
+            setFlashMode('off');
+        }
+    }
+
     return (        
         <View style={globalStyles.container}>
             {/* Faz uma tela verde*/}
-            <View style={styles.telaVerde}>
-                <Camera ref={camera} device={device} style={StyleSheet.absoluteFill} isActive={true} photo={true}></Camera> 
+            <View style={styles.cameraContainer}>
+                <Camera ref={camera} device={device} style={StyleSheet.absoluteFill} isActive={true} torch={flashMode} photo={true}></Camera>
+                <View style={styles.botoesCamera}>
+                    <Pressable style={styles.botaoIcon} onPress={flashHandler}>
+                        <View style={{padding: 10}}>
+                            <MaterialIcons name={flashMode == "on" ?"flash-on":"flash-off"} size={24} color="white" />
+                        </View>
+                    </Pressable>
+                </View>
             </View>
             <View style={styles.botoesContainer}>
                 <Pressable style={styles.botao} onPress={backHandler}>
@@ -72,13 +89,11 @@ export default function CameraAruco({ navigation}) {
 }
 
 const styles = StyleSheet.create({
-    telaVerde: {
+    cameraContainer: {
         width: '100%',
         height: '90%',
-        textAlign: 'center',
         backgroundColor: 'green',
-        alignItems: 'center',
-        justifyContent: 'center',
+        position: 'relative',
     },
     botoesContainer: {
         flex: 1,
@@ -94,4 +109,17 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         borderRadius: 9,
     },
+    botoesCamera: {
+        position: 'absolute',
+        top: 25,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+    botaoIcon: {
+        padding: 2,
+        margin: 10,
+        backgroundColor: '#1E3C40',
+        borderRadius: 50,
+    }
 });
