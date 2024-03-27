@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import { View, Text, StyleSheet, StatusBar, Button, Pressable, ActivityIndicator, GestureResponderEvent, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Button, Pressable, ActivityIndicator, GestureResponderEvent, TouchableOpacity, Image, Alert } from 'react-native';
 import { globalStyles } from '../styles/global';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 
 export default function CameraAruco({ route, navigation}) {
 
@@ -31,6 +32,22 @@ export default function CameraAruco({ route, navigation}) {
     const cancelHandler = () => {
         setButtonMode("menu");
         //navigation.push('Home');
+    }
+
+    const uploadHandler = () => {
+        //CameraRoll.save(imageSource, {type: 'photo', album: 'Aruco'})
+        if (Platform.OS === 'android') {
+            Alert.alert('Salvar', 'Deseja salvar a imagem?', [
+                {text: 'Sim', onPress: () => {
+                    CameraRoll.saveAsset(imageSource, {type: 'photo', album: 'Aruco'});
+                    console.log("Imagem salva");
+                    navigation.replace('Galeria')
+
+                }},
+                {text: 'Não', onPress: () => console.log('Cancelado')},
+            ]);
+        }
+        
     }
 
     return (        
@@ -100,7 +117,7 @@ export default function CameraAruco({ route, navigation}) {
                 <Pressable style={styles.botao} onPress={backHandler}>
                     <Text style={globalStyles.textbotao}>Voltar</Text>
                 </Pressable>
-                <Pressable style={styles.botao}>
+                <Pressable style={styles.botao} onPress={uploadHandler}>
                     <Text style={globalStyles.textbotao}>Salvar</Text>
                 </Pressable>
             </View>

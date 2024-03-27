@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import { View, Text, StyleSheet, StatusBar, Button, Pressable, ActivityIndicator, GestureResponderEvent, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Button, Pressable, ActivityIndicator, GestureResponderEvent, TouchableOpacity, Image } from 'react-native';
 import { globalStyles } from '../styles/global';
 import { useCameraDevice, useCameraPermission, Camera } from 'react-native-vision-camera';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -12,6 +12,7 @@ export default function CameraAruco({ navigation}) {
 
     const {hasPermission, requestPermission} = useCameraPermission();
     const device = useCameraDevice('back');
+    const [photo, setPhoto] = useState(false);
     const [imageSource, setImageSource] = useState('');
     const camera = useRef(null);
     const [flashMode, setFlashMode] = useState('off');
@@ -48,11 +49,13 @@ export default function CameraAruco({ navigation}) {
     };
 
     const capturePhoto = async () => {    
-        if(camera.current !== null) {
-            const photo = await camera.current.takePhoto();
-            console.log(photo.path);
-            navigation.navigate('Foto', {imageSource: photo.path});
-        }
+        const photo = await camera.current.takePhoto({
+            fixOrientation: false,
+            quality:1,
+        });
+        console.log(photo.path);
+        setPhoto(true);
+        navigation.navigate('Foto', {imageSource: photo.path});
     }
 
     const flashHandler = () => {
@@ -65,9 +68,16 @@ export default function CameraAruco({ navigation}) {
 
     return (        
         <View style={globalStyles.container}>
-            {/* Faz uma tela verde*/}
             <View style={styles.cameraContainer}>
-                <Camera ref={camera} device={device} style={StyleSheet.absoluteFill} isActive={true} torch={flashMode} photo={true}></Camera>
+                <Camera 
+                    ref={camera} 
+                    device={device} 
+                    style={StyleSheet.absoluteFill} 
+                    isActive={true} 
+                    torch={flashMode} 
+                    photo={true}>    
+                </Camera>
+
                 <View style={styles.botoesCamera}>
                     <Pressable style={styles.botaoIcon} onPress={flashHandler}>
                         <View style={{padding: 10}}>

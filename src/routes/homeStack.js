@@ -4,6 +4,7 @@ import Home from '../screens/Home';
 // import Camera from '../screens/CameraApp';
 import Aruco from '../screens/CameraAruco';
 import Foto from '../screens/DataLabel';
+import Galeria from '../screens/Galeria';
 
 const screens = {
     Home: {
@@ -14,6 +15,9 @@ const screens = {
     },
     Foto: {
         screen: Foto,
+    },
+    Galeria: {
+        screen: Galeria,
     },
 };
 

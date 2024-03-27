@@ -9,6 +9,11 @@ export default function Home({ navigation }) {
         navigation.navigate('Camera');
         //navigation.push('Camera');
     }
+
+    const galeriaHandler = () => {
+        navigation.navigate('Galeria');
+    }
+
     const exitHandler = () => {
         if (Platform.OS === 'android') {
             Alert.alert('Sair', 'Deseja sair do aplicativo?', [
@@ -25,6 +30,9 @@ export default function Home({ navigation }) {
             <View style={styles.botoesContainer}>
                 <Pressable style={styles.botao} onPress={pressHandler}>
                     <Text style={styles.textbotao}>Abrir câmera</Text>
+                </Pressable>
+                <Pressable style={styles.botao} onPress={galeriaHandler}>
+                    <Text style={styles.textbotao}>Abrir galeria</Text>
                 </Pressable>
                 <Pressable style={styles.botao} onPress={exitHandler}>
                     <Text style={styles.textbotao}>Sair</Text>
@@ -45,7 +53,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     titulo: {
-        paddingTop: 95,
+        paddingTop: 80,
         paddingBottom: 50,
         fontSize: 37,
         fontWeight: 'bold',
