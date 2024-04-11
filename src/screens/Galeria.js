@@ -58,7 +58,7 @@ export default function Galeria({ navigation }) {
         const gdrive = new GDrive();
         gdrive.accessToken = (await GoogleSignin.getTokens()).accessToken;
         console.log("Drive configurado");
-        console.log(await gdrive.files.list());
+        //console.log(await gdrive.files.list());
         const filePath = clickedImage;
         //convertendo a imagem em base64
         const res = await
@@ -154,7 +154,7 @@ export default function Galeria({ navigation }) {
                             {buttonMode === "on" && clickedIndex === index && (
                                 <View style={{flexDirection: 'row'}}>
                                     <Pressable style={styles.botaoIcon} onPress={driveButton}>
-                                        <Image source={require('../../assets/google-drive.png')} style={{width: 24, height: 24}}/>
+                                       <Image source={require('../../assets/google-drive.png')} style={{width: 24, height: 24}}/>
                                         {/* <FontAwesome5 name='google-drive' size={24} color="white" /> */}
                                     </Pressable>
                                     <Pressable style={styles.botaoIcon}>

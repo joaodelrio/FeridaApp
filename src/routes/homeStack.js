@@ -4,6 +4,7 @@ import Home from '../screens/Home';
 import Camera from '../screens/Camera';
 import Foto from '../screens/DataLabel';
 import Galeria from '../screens/Galeria';
+import EditSave from '../screens/EditSave';
 
 const screens = {
     Home: {
@@ -13,7 +14,7 @@ const screens = {
         screen: Camera,
     },
     Foto: {
-        screen: Foto,
+        screen: EditSave,
     },
     Galeria: {
         screen: Galeria,
