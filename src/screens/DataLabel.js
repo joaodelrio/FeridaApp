@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { View, Text, StyleSheet, StatusBar, Button, Pressable, ActivityIndicator, GestureResponderEvent, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Pressable, Image, Alert } from 'react-native';
 import { globalStyles } from '../styles/global';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
@@ -59,12 +59,14 @@ export default function CameraAruco({ route, navigation}) {
                     <>
                         <Pressable style={styles.botaoIcon} onPress={segHandler}>
                             <View style={{padding: 10}}>
-                                <MaterialCommunityIcons name='ruler-square-compass' size={24} color="white" />
+                            <Image source={require('../../assets/drafting-compass.png')} style={{width: 24, height: 24}}/>
+                                {/* <MaterialCommunityIcons name='ruler-square-compass' size={24} color="white" /> */}
                             </View>
                         </Pressable>
                         <Pressable style={styles.botaoIcon} onPress={classHandler}>
                             <View style={{padding: 10}}>
-                                <MaterialCommunityIcons name='pencil' size={24} color="white" />
+                                <Image source={require('../../assets/pencil.png')} style={{width: 24, height: 24}}/>
+                                {/* <MaterialCommunityIcons name='pencil' size={24} color="white" /> */}
                             </View>
                         </Pressable>
                     </>
@@ -73,12 +75,14 @@ export default function CameraAruco({ route, navigation}) {
                     <>
                        <Pressable style={styles.botaoIcon} onPress={confirmHandler}>
                             <View style={{padding: 10}}>
-                                <MaterialCommunityIcons name='check' size={24} color="white" />
+                                <Image source={require('../../assets/check.png')} style={{width: 24, height: 24}}/>
+                                {/* <MaterialCommunityIcons name='check' size={24} color="white" /> */}
                             </View>
                         </Pressable>
                         <Pressable style={styles.botaoIcon} onPress={cancelHandler}>
                             <View style={{padding: 10}}>
-                                <MaterialCommunityIcons name='close' size={24} color="white" />
+                                <Image source={require('../../assets/close.png')} style={{width: 24, height: 24}}/>
+                                {/* <MaterialCommunityIcons name='close' size={24} color="white" /> */}
                             </View>
                         </Pressable> 
                     </>
@@ -87,12 +91,14 @@ export default function CameraAruco({ route, navigation}) {
                     <>
                        <Pressable style={styles.botaoIcon} onPress={confirmHandler}>
                             <View style={{padding: 10}}>
-                                <MaterialCommunityIcons name='check' size={24} color="white" />
+                                <Image source={require('../../assets/check.png')} style={{width: 24, height: 24}}/>
+                                {/* <MaterialCommunityIcons name='check' size={24} color="white" /> */}
                             </View>
                         </Pressable>
                         <Pressable style={styles.botaoIcon} onPress={cancelHandler}>
                             <View style={{padding: 10}}>
-                                <MaterialCommunityIcons name='close' size={24} color="white" />
+                                <Image source={require('../../assets/close.png')} style={{width: 24, height: 24}}/>
+                                {/* <MaterialCommunityIcons name='close' size={24} color="white" /> */}
                             </View>
                         </Pressable> 
                         <Pressable style={{backgroundColor: "red", borderRadius: 50, margin: 15, padding: 9}}>

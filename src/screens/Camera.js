@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import { View, Text, StyleSheet, StatusBar, Button, Pressable, ActivityIndicator, GestureResponderEvent, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Pressable, ActivityIndicator, Image} from 'react-native';
 import { globalStyles } from '../styles/global';
 import { useCameraDevice, useCameraPermission, Camera } from 'react-native-vision-camera';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -81,7 +81,9 @@ export default function CameraAruco({ navigation}) {
                 <View style={styles.botoesCamera}>
                     <Pressable style={styles.botaoIcon} onPress={flashHandler}>
                         <View style={{padding: 10}}>
-                            <MaterialIcons name={flashMode == "on" ?"flash-on":"flash-off"} size={24} color="white" />
+                            <Image source={flashMode == "on" ? require('../../assets/flash-on.png') : require('../../assets/flash-off.png')} style={{width: 24, height: 24}}/>
+                            
+                            {/* <MaterialIcons name={flashMode == "on" ?"flash-on":"flash-off"} size={24} color="white" /> */}
                         </View>
                     </Pressable>
                 </View>

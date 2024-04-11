@@ -1,8 +1,7 @@
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
 import Home from '../screens/Home';
-// import Camera from '../screens/CameraApp';
-import Aruco from '../screens/CameraAruco';
+import Camera from '../screens/Camera';
 import Foto from '../screens/DataLabel';
 import Galeria from '../screens/Galeria';
 
@@ -11,7 +10,7 @@ const screens = {
         screen: Home,
     },
     Camera: {
-        screen: Aruco,
+        screen: Camera,
     },
     Foto: {
         screen: Foto,
