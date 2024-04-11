@@ -15,9 +15,17 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.anonymous.camera",
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera."
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.836877700738-2tppsva97tgsf2ki9bniq85vcj2j73qn"
+            ]
+          }
+        ]
       }
     },
     "android": {

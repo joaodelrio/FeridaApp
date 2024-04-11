@@ -1,10 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, StatusBar, Pressable, Alert, Platform, BackHandler} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { View, Text, StyleSheet, StatusBar, Pressable, Alert, Platform, BackHandler, Button} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 
-
-
 export default function Home({ navigation }) {
+
     const pressHandler = () => {
         navigation.navigate('Camera');
         //navigation.push('Camera');
@@ -23,6 +22,7 @@ export default function Home({ navigation }) {
         }
       };
 
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
@@ -34,6 +34,7 @@ export default function Home({ navigation }) {
                 <Pressable style={styles.botao} onPress={galeriaHandler}>
                     <Text style={styles.textbotao}>Abrir galeria</Text>
                 </Pressable>
+                
                 <Pressable style={styles.botao} onPress={exitHandler}>
                     <Text style={styles.textbotao}>Sair</Text>
                 </Pressable>
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     titulo: {
-        paddingTop: 80,
+        paddingTop: 30,
         paddingBottom: 50,
         fontSize: 37,
         fontWeight: 'bold',
