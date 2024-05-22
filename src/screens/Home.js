@@ -13,6 +13,12 @@ export default function Home({ navigation }) {
         navigation.navigate('Galeria');
     }
 
+    const medicaoHandler = () => {
+        navigation.navigate('Medicao');
+    }
+
+
+
     const exitHandler = () => {
         if (Platform.OS === 'android') {
             Alert.alert('Sair', 'Deseja sair do aplicativo?', [
@@ -33,6 +39,9 @@ export default function Home({ navigation }) {
                 </Pressable>
                 <Pressable style={styles.botao} onPress={galeriaHandler}>
                     <Text style={styles.textbotao}>Abrir galeria</Text>
+                </Pressable>
+                <Pressable style={styles.botao} onPress={medicaoHandler}>
+                    <Text style={styles.textbotao}>Medição</Text>
                 </Pressable>
                 
                 <Pressable style={styles.botao} onPress={exitHandler}>

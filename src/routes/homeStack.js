@@ -5,6 +5,7 @@ import Camera from '../screens/Camera';
 import Foto from '../screens/DataLabel';
 import Galeria from '../screens/Galeria';
 import EditSave from '../screens/EditSave';
+import Medicao from '../screens/Medicao';
 
 const screens = {
     Home: {
@@ -19,6 +20,9 @@ const screens = {
     Galeria: {
         screen: Galeria,
     },
+    Medicao: {
+        screen: Medicao,
+    }
 };
 
 const HomeStack = createStackNavigator( screens );
