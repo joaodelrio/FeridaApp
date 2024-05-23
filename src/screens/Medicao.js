@@ -27,7 +27,7 @@ export default function Medicao({ navigation }) {
     const editHandler = () => {
         console.log(imageSource);
         if(imageSource){
-            navigation.navigate('Foto', {imageSource: imageSource});
+            navigation.navigate('EditSave', {imageSource: imageSource});
         }
         else{
             Alert.alert('Sem Imagem', 'Selecione uma imagem para avançar');

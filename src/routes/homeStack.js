@@ -22,6 +22,9 @@ const screens = {
     },
     Medicao: {
         screen: Medicao,
+    },
+    EditSave: {
+        screen: EditSave,
     }
 };
 

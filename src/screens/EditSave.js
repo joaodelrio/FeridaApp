@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Alert, Dimensions, Platform } from 'react-native';
 import { globalStyles } from '../styles/global';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
-import { Svg, Path } from 'react-native-svg';
+import { Svg, Path, Rect } from 'react-native-svg';
 import { captureRef } from "react-native-view-shot";
 import Toast from 'react-native-toast-message';
 

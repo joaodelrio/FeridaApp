@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet, StatusBar, Pressable, FlatList, Image, Button, Alert} from 'react-native';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { FontAwesome5 } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
 import {
     GDrive,
     MimeTypes
@@ -13,6 +14,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 var fs = require('react-native-fs');
 import { GoogleAndroidClientId, GoogleIosClientId, GoogleWebClientId } from '../env/env';
+import RNFS from 'react-native-fs';
 
 export default function Galeria({ navigation }) {
 
@@ -52,11 +54,24 @@ export default function Galeria({ navigation }) {
         }
     }
 
-    const editButton = () => {
-        
-        console.log(teste);
-        navigation.navigate('Foto', {imageSource: teste});
-    }
+    
+
+const editButton = async () => {
+    let img = photos[clickedIndex].node.image.uri;
+    console.log("aqui", img);
+
+    // Convert content URI to file path
+    const filePath = await RNFS.stat(img)
+        .then((statResult) => {
+            return statResult.originalFilepath;
+        })
+        .catch((err) => {
+            console.error('Error: ', err.message, err.code);
+        });
+
+    const fileUri = `file://${filePath}`;
+    navigation.navigate('EditSave', { imageSource: fileUri });
+};
 
 
 
@@ -101,7 +116,7 @@ export default function Galeria({ navigation }) {
           })
           .then(r => {
             setPhotos(r.edges);
-            console.log(r.edges);
+            //console.log(r.edges);
           })
           .catch((err) => {
              //Error Loading Images
