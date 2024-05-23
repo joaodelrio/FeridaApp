@@ -22,6 +22,7 @@ export default function Galeria({ navigation }) {
     const [clickedImage, setClickedImage] = useState('');
     const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState([]);
+    const [imageSource, setImageSource] = useState(null);
 
     const exitHandler = () => {
         navigation.navigate('Home');
@@ -50,6 +51,14 @@ export default function Galeria({ navigation }) {
             ]);
         }
     }
+
+    const editButton = () => {
+        
+        console.log(teste);
+        navigation.navigate('Foto', {imageSource: teste});
+    }
+
+
 
     const driveHandler = async () => {
         let day = new Date().getDate() + '-' + new Date().getMonth() + '-' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds();
@@ -92,6 +101,7 @@ export default function Galeria({ navigation }) {
           })
           .then(r => {
             setPhotos(r.edges);
+            console.log(r.edges);
           })
           .catch((err) => {
              //Error Loading Images
@@ -161,7 +171,13 @@ export default function Galeria({ navigation }) {
                                         <Image source={require('../../assets/whatsapp.png')} style={{width: 24, height: 24}}/>
                                         {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
                                     </Pressable>
+                                    <Pressable style={styles.botaoIcon} onPress={editButton}>
+                                        <Image source={require('../../assets/draw.png')} style={{width: 24, height: 24}}/>
+                                        {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
+                                    </Pressable>                
                                 </View>
+                                
+
                             )}
                             </Pressable>
                             
