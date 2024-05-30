@@ -34,7 +34,8 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "package": "com.anonymous.camera"
     },
@@ -47,7 +48,18 @@
         {
           "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3272c2e6-96f3-4544-b708-da83e18ebae6"
+      }
+    }
   }
 }

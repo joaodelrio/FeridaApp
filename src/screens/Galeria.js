@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet, StatusBar, Pressable, FlatList, Image, Button, Alert} from 'react-native';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { FontAwesome5 } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
 import {
     GDrive,
     MimeTypes
@@ -13,6 +14,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 var fs = require('react-native-fs');
 import { GoogleAndroidClientId, GoogleIosClientId, GoogleWebClientId } from '../env/env';
+import RNFS from 'react-native-fs';
 
 export default function Galeria({ navigation }) {
 
@@ -22,6 +24,7 @@ export default function Galeria({ navigation }) {
     const [clickedImage, setClickedImage] = useState('');
     const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState([]);
+    const [imageSource, setImageSource] = useState(null);
 
     const exitHandler = () => {
         navigation.navigate('Home');
@@ -50,6 +53,27 @@ export default function Galeria({ navigation }) {
             ]);
         }
     }
+
+    
+
+const editButton = async () => {
+    let img = photos[clickedIndex].node.image.uri;
+    console.log("aqui", img);
+
+    // Convert content URI to file path
+    const filePath = await RNFS.stat(img)
+        .then((statResult) => {
+            return statResult.originalFilepath;
+        })
+        .catch((err) => {
+            console.error('Error: ', err.message, err.code);
+        });
+
+    const fileUri = `file://${filePath}`;
+    navigation.navigate('EditSave', { imageSource: fileUri });
+};
+
+
 
     const driveHandler = async () => {
         let day = new Date().getDate() + '-' + new Date().getMonth() + '-' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds();
@@ -92,6 +116,7 @@ export default function Galeria({ navigation }) {
           })
           .then(r => {
             setPhotos(r.edges);
+            //console.log(r.edges);
           })
           .catch((err) => {
              //Error Loading Images
@@ -161,7 +186,13 @@ export default function Galeria({ navigation }) {
                                         <Image source={require('../../assets/whatsapp.png')} style={{width: 24, height: 24}}/>
                                         {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
                                     </Pressable>
+                                    <Pressable style={styles.botaoIcon} onPress={editButton}>
+                                        <Image source={require('../../assets/draw.png')} style={{width: 24, height: 24}}/>
+                                        {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
+                                    </Pressable>                
                                 </View>
+                                
+
                             )}
                             </Pressable>
                             
