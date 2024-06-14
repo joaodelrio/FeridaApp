@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet, StatusBar, Pressable, FlatList, Image, Button, Alert} from 'react-native';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import { FontAwesome5 } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
+import { Buffer } from 'buffer';
 import {
     GDrive,
     MimeTypes
@@ -15,32 +17,50 @@ var fs = require('react-native-fs');
 import { GoogleAndroidClientId, GoogleIosClientId, GoogleWebClientId } from '../env/env';
 import RNFS from 'react-native-fs';
 
-export default function Galeria({ navigation }) {
+export default function GaleriaDrive({ navigation }) {
 
     const [photos, setPhotos] = useState([]);
     const [buttonMode, setButtonMode] = useState("off");
     const [clickedIndex, setClickedIndex] = useState('');
     const [clickedImage, setClickedImage] = useState('');
+    const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState([]);
     const [imageSource, setImageSource] = useState(null);
+    const [photoTest, setPhotoTest] = useState(null);
 
-    const backScreenNavigation = () => {
+    const exitHandler = () => {
         navigation.navigate('Home');
-    };
+      };
 
     const buttonHandler = (index) => {
         if(buttonMode == "off"){
             setButtonMode("on");
             setClickedIndex(index);
             setClickedImage(photos[index].node.image.uri);
+            // Console log do path da imagem
+            console.log(clickedImage);
+            console.log("Botão ligado");
         } else {
             setButtonMode("off");
             setClickedIndex(null);
+            console.log("Botão desligado");
         }
     }
 
+    const driveButton = () => {
+        if (Platform.OS === 'android') {
+            Alert.alert('Drive', 'Deseja salvar a imagem no drive?', [
+                {text: 'Sim', onPress: () => driveHandler()},
+                {text: 'Não', onPress: () => console.log('Cancelado')},
+            ]);
+        }
+    }
+
+    
+
     const editButton = async () => {
         let img = photos[clickedIndex].node.image.uri;
+        console.log("aqui", img);
 
         // Convert content URI to file path
         const filePath = await RNFS.stat(img)
@@ -55,108 +75,121 @@ export default function Galeria({ navigation }) {
         navigation.navigate('EditSave', { imageSource: fileUri });
     };
 
-    const deleteConfirm = () => {
-        Alert.alert('Deletar', 'Deseja deletar a imagem?', [
-            {text: 'Sim', onPress: () => deleteHandler()},
-            {text: 'Não', onPress: () => console.log('Cancelado')},
-        ]);
+    const driveHandler = async () => {
+        let day = new Date().getDate() + '-' + new Date().getMonth() + '-' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds();
+        console.log("Salvando no drive...");
+        console.log(clickedImage);
+        const gdrive = new GDrive();
+        gdrive.accessToken = (await GoogleSignin.getTokens()).accessToken;
+        console.log("Drive configurado");
+        //console.log(await gdrive.files.list());
+        const filePath = clickedImage;
+        //convertendo a imagem em base64
+        const res = await
+        fs.readFile(filePath, 'base64').then((res) => {
+            return res;
+        }).catch((err) => {
+            console.log("driveHandlerError: " + err);
+        });
+
+        const id = (await gdrive.files.newMultipartUploader()
+        .setData(res, MimeTypes.PNG)
+        .setIsBase64(true)
+        .setRequestBody({
+            name: day ,
+            parents: ["1igXlixE4ftYqEu_JBepe0xhjYOre5aHV"]
+            
+        })
+        .execute()
+        ).id;
+
+        
+        console.log(await gdrive.files.getBinary(id));
+        
     }
 
-    const deleteHandler = async () => {
-        let img = photos[clickedIndex].node.image.uri;
-
-        // Convert content URI to file path
-        const filePath = await RNFS.stat(img)
-            .then((statResult) => {
-                return statResult.originalFilepath;
-            })
-            .catch((err) => {
-                console.error('Error: ', err.message, err.code);
-            });
-
-        const fileUri = `file://${filePath}`;
-
-        // Delete the image from the device
-        await RNFS.unlink(fileUri)
-            .then(() => {
-                console.log('Image deleted');
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-
-        // Reload the gallery
-        getAllPhotos();
-    }
-
-    const driveSaveConfirm = () => {
-        if (Platform.OS === 'android') {
-            Alert.alert('Drive', 'Deseja salvar a imagem no drive?', [
-                {text: 'Sim', onPress: () => driveSaveHandler()},
-                {text: 'Não', onPress: () => console.log('Cancelado')},
-            ]);
-        }
-    }
-
-    const driveSaveHandler = async () => {
-        try{
-            // Setting the date for the image name
-            let day = new Date().getDate() + '-' + new Date().getMonth() + '-' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds();
-            console.log("Salvando no drive... Image: " + `${clickedImage}`);
-
+    const getAllPhotosFromDrive = async () => {
+        try {
+            // Initialize Google Drive
             const gdrive = new GDrive();
             gdrive.accessToken = (await GoogleSignin.getTokens()).accessToken;
-            // Increase the timeout fetch
-            gdrive.fetchTimeout = 3000;
-            console.log(await gdrive.files.list());
-
-            const filePath = clickedImage;
-
-            // Converting the image to base64
-            const res = await
-            fs.readFile(filePath, 'base64').then((res) => {
-                return res;
-            }).catch((err) => {
-                console.log(err);
+    
+            const directoryId = '1igXlixE4ftYqEu_JBepe0xhjYOre5aHV';
+    
+            // List the files in the specified folder on Drive
+            const filesResponse = await gdrive.files.list({
+                q: `'${directoryId}' in parents`,
+                fields: 'files(id, name, mimeType)',
             });
-            
-            // Loading alert to the user
-            Alert.alert('Drive', 'Salvando imagem no Drive...');
+    
+            // Extract only the files from the response
+            const filesFromDirectory = filesResponse.files;
+    
+            // Filter only the images
+            const imageFromDirectory = filesFromDirectory.filter(file => file.mimeType.startsWith('image/'));
+    
+            if (imageFromDirectory.length > 0) {
+                // Download the images
 
-            // Uploading the image to Google Drive
-            // 1igXlixE4ftYqEu_JBepe0xhjYOre5aHV - Root Folder
-            // 1j0QvjFzd3qQ9zqJlUvPKb3lGeuXUA-Jl - Folder for Original Images
-            // 1t3K3hcqsETutFxxGHwPGF5DJ4czLDGfH - Folder for Label Images
-            // 1ZuU9ByEcMYfyl7iSj8C7B2otHJ49c17u - Folder for Segmented Images
-            const id = await gdrive.files.newMultipartUploader()
-            .setData(res, MimeTypes.PNG)
-            .setIsBase64(true)
-            .setRequestBody({
-                name: day,
-                parents: ["1j0QvjFzd3qQ9zqJlUvPKb3lGeuXUA-Jl"]
-            })
-            .execute();
-            
-            //Alert the user that the image was uploaded
-            Alert.alert('Drive', 'Imagem salva no Drive com sucesso!');
-        }   
+                for (let i = 0; i < imageFromDirectory.length; i++) {
+                    const imageId = imageFromDirectory[i].id;
+                    const imageName = imageFromDirectory[i].name;
+                    const imageMimeType = imageFromDirectory[i].mimeType;
+                    const imageData = await gdrive.files.getBinary(imageId);
+
+                    
+                    console.log(imageName);
+                    const imageDataBase64 = Buffer.from(imageData, 'binary').toString('base64');
         
-        catch(e){
-            console.log("Error uploading the image to Google Drive. Error message: " + e);
-        } 
-    }
+                    //Uri of the image on the phone (saving in the cache folder)
+                    // const fileUri = `${FileSystem.cacheDirectory}${imageName}`;
+                    // console.log(fileUri);
+
+
+                    // Crate a new folder in the phone's directory if it doesn't exist
+                    const folderUri = `${FileSystem.documentDirectory}`+"driveferidas/";
+                    await FileSystem.makeDirectoryAsync(folderUri, {intermediates: true});
+
+
+                    // Uri of the image on the phone (saving in the phone's directory)
+                    const fileExtension = imageMimeType.split('/')[1];
+                    const fileUri = `${folderUri}${imageName}.${fileExtension}`;
+                    console.log(fileUri);
+        
+                    // Saving the image on the phone
+                    await FileSystem.writeAsStringAsync(fileUri, imageDataBase64, {
+                        encoding: FileSystem.EncodingType.Base64,
+                    });
+                    // Ensure the file has a valid image MIME type before saving to CameraRoll
+                    console.log(fileUri.mimeType);
+                    // if (imageFromDirectory[i].mimeType.startsWith('image/')) {
+                    //     await CameraRoll.saveAsset(fileUri, { type: 'photo', album: 'DriveFeridas' });
+                    // }
+                    CameraRoll.saveAsset(fileUri, {type: 'photo', album: 'DriveFeridas'});
+                    console.log('Image saved on the phone');
+                }
+            } else {
+                console.log('No images found in the specified directory.');
+            }
+
+        } catch (error) {
+            console.error('Error while fetching photos from Google Drive: ', error);
+            setError(error);
+        }
+    };
 
     const getAllPhotos = async () => {
         CameraRoll.getPhotos({
-            first: 1000,
+            first: 20,
             assetType: 'Photos',
-            groupName: 'Aruco',
+            groupName: 'DriveFeridas',
           })
           .then(r => {
             setPhotos(r.edges);
+            //console.log(r.edges);
           })
           .catch((err) => {
-            console.log(err);
+             //Error Loading Images
           });
     };
 
@@ -200,7 +233,8 @@ export default function Galeria({ navigation }) {
     };
 
     useEffect(() => {
-        getAllPhotos();
+        // getAllPhotosFromDrive();
+        // getAllPhotos();
         configureGoogleSignIn();
     }, []);
 
@@ -215,17 +249,19 @@ export default function Galeria({ navigation }) {
                             <Image source={{uri: item.node.image.uri}} style={{width: 184, height: 184}}/>
                             {buttonMode === "on" && clickedIndex === index && (
                                 <View style={{flexDirection: 'row'}}>
-                                    <Pressable style={styles.botaoIcon} onPress={driveSaveConfirm}>
+                                    <Pressable style={styles.botaoIcon} onPress={driveButton}>
                                        <Image source={require('../../assets/google-drive.png')} style={{width: 24, height: 24}}/>
+                                        {/* <FontAwesome5 name='google-drive' size={24} color="white" /> */}
+                                    </Pressable>
+                                    <Pressable style={styles.botaoIcon}>
+                                        <Image source={require('../../assets/whatsapp.png')} style={{width: 24, height: 24}}/>
+                                        {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
                                     </Pressable>
                                     <Pressable style={styles.botaoIcon} onPress={editButton}>
                                         <Image source={require('../../assets/draw.png')} style={{width: 24, height: 24}}/>
-                                    </Pressable>
-                                    <Pressable style={styles.botaoIcon} onPress={deleteConfirm}>
-                                        <Image source={require('../../assets/trash.png')} style={{width: 24, height: 24}}/>
+                                        {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
                                     </Pressable>                
                                 </View>
-                                
 
                             )}
                             </Pressable>
@@ -233,9 +269,10 @@ export default function Galeria({ navigation }) {
                         </View>
                     )
                 }}/>
+                
              </View>
             <View style={styles.botoesContainer}>
-                <Pressable style={styles.botao} onPress={backScreenNavigation}>
+                <Pressable style={styles.botao} onPress={exitHandler}>
                     <Text style={styles.textbotao}>Tela Inicial</Text>
                 </Pressable>
                 { userInfo.user ? (
@@ -265,12 +302,11 @@ const styles = StyleSheet.create({
     },
     botoesContainer: {
         width: '100%',
-        marginTop: 3,
+        margin: 3,
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#fff',
     },
     botao: {
         backgroundColor: '#1E3C40',
