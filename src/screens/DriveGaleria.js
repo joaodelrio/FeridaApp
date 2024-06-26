@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet, StatusBar, Pressable, FlatList, Image, Button, Alert} from 'react-native';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
-import { FontAwesome5 } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
+var fs = require('react-native-fs');
 import { Buffer } from 'buffer';
 import {
     GDrive,
@@ -25,26 +25,29 @@ export default function GaleriaDrive({ navigation }) {
     const [clickedImage, setClickedImage] = useState('');
     const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState([]);
-    const [imageSource, setImageSource] = useState(null);
-    const [photoTest, setPhotoTest] = useState(null);
+    const [reload, setReload] = useState(false);
+    const [labeled, setLabeled] = useState(0);
 
-    const exitHandler = () => {
+    const backScreenNavigation = () => {
         navigation.navigate('Home');
-      };
+    };
 
     const buttonHandler = (index) => {
         if(buttonMode == "off"){
             setButtonMode("on");
             setClickedIndex(index);
             setClickedImage(photos[index].node.image.uri);
-            // Console log do path da imagem
-            console.log(clickedImage);
-            console.log("Botão ligado");
         } else {
             setButtonMode("off");
             setClickedIndex(null);
-            console.log("Botão desligado");
         }
+    }
+
+    const reloadHandler = async() => {
+        Alert.alert('Drive', 'Estamos baixando as imagens do drive. Aguarde um momento!')
+        await getAllPhotosFromDrive();
+        setReload(true);
+        Alert.alert('Drive', 'Imagens baixadas com sucesso!')
     }
 
     const driveButton = () => {
@@ -54,13 +57,10 @@ export default function GaleriaDrive({ navigation }) {
                 {text: 'Não', onPress: () => console.log('Cancelado')},
             ]);
         }
-    }
-
-    
+    };
 
     const editButton = async () => {
         let img = photos[clickedIndex].node.image.uri;
-        console.log("aqui", img);
 
         // Convert content URI to file path
         const filePath = await RNFS.stat(img)
@@ -72,124 +72,173 @@ export default function GaleriaDrive({ navigation }) {
             });
 
         const fileUri = `file://${filePath}`;
-        navigation.navigate('EditSave', { imageSource: fileUri });
+        navigation.navigate('Edit', { imageSource: fileUri });
     };
 
-    const driveHandler = async () => {
-        let day = new Date().getDate() + '-' + new Date().getMonth() + '-' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds();
-        console.log("Salvando no drive...");
-        console.log(clickedImage);
-        const gdrive = new GDrive();
-        gdrive.accessToken = (await GoogleSignin.getTokens()).accessToken;
-        console.log("Drive configurado");
-        //console.log(await gdrive.files.list());
-        const filePath = clickedImage;
-        //convertendo a imagem em base64
-        const res = await
-        fs.readFile(filePath, 'base64').then((res) => {
-            return res;
-        }).catch((err) => {
-            console.log("driveHandlerError: " + err);
-        });
-
-        const id = (await gdrive.files.newMultipartUploader()
-        .setData(res, MimeTypes.PNG)
-        .setIsBase64(true)
-        .setRequestBody({
-            name: day ,
-            parents: ["1igXlixE4ftYqEu_JBepe0xhjYOre5aHV"]
-            
-        })
-        .execute()
-        ).id;
-
-        
-        console.log(await gdrive.files.getBinary(id));
-        
+    const deleteConfirm = () => {
+        Alert.alert('Deletar', 'Deseja deletar a imagem?', [
+            {text: 'Sim', onPress: () => deleteHandler()},
+            {text: 'Não', onPress: () => console.log('Cancelado')},
+        ]);
     }
 
-    const getAllPhotosFromDrive = async () => {
-        try {
-            // Initialize Google Drive
-            const gdrive = new GDrive();
-            gdrive.accessToken = (await GoogleSignin.getTokens()).accessToken;
-    
-            const directoryId = '1igXlixE4ftYqEu_JBepe0xhjYOre5aHV';
-    
-            // List the files in the specified folder on Drive
-            const filesResponse = await gdrive.files.list({
-                q: `'${directoryId}' in parents`,
-                fields: 'files(id, name, mimeType)',
+    const deleteHandler = async () => {
+        let img = photos[clickedIndex].node.image.uri;
+
+        // Convert content URI to file path
+        const filePath = await RNFS.stat(img)
+            .then((statResult) => {
+                return statResult.originalFilepath;
+            })
+            .catch((err) => {
+                console.error('Error: ', err.message, err.code);
             });
-    
-            // Extract only the files from the response
-            const filesFromDirectory = filesResponse.files;
-    
-            // Filter only the images
-            const imageFromDirectory = filesFromDirectory.filter(file => file.mimeType.startsWith('image/'));
-    
-            if (imageFromDirectory.length > 0) {
-                // Download the images
 
-                for (let i = 0; i < imageFromDirectory.length; i++) {
-                    const imageId = imageFromDirectory[i].id;
-                    const imageName = imageFromDirectory[i].name;
-                    const imageMimeType = imageFromDirectory[i].mimeType;
-                    const imageData = await gdrive.files.getBinary(imageId);
+        const fileUri = `file://${filePath}`;
 
-                    
-                    console.log(imageName);
-                    const imageDataBase64 = Buffer.from(imageData, 'binary').toString('base64');
+        // Delete the image from the device
+        await RNFS.unlink(fileUri)
+            .then(() => {
+                console.log('Image deleted');
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+
+        // Delete the image from document directory
+        const fileName = fileUri.split('/').pop();
+        const folderUri = `${FileSystem.documentDirectory}`+"driveferidas/";
+        const fileUriToDelete = `${folderUri}${fileName}`;
+        await FileSystem.deleteAsync(fileUriToDelete, {idempotent: true});
+
+
+        // Reload the gallery
+        getAllPhotos();
+    }
+
+    const verifyIfLabelExists = async () => {
+        // Initialize Google Drive
+        const gdrive = new GDrive();
+        gdrive.accessToken = (await GoogleSignin.getTokens()).accessToken;
+        gdrive.fetchTimeout = 3000;
+
+        // List the files in the specified folder on Drive
+        const filesResponse = await gdrive.files.list({
+            q: `'1t3K3hcqsETutFxxGHwPGF5DJ4czLDGfH' in parents`,
+            fields: 'files(id, name, mimeType)',
+        });
+
+        // Extract only the files from the response
+        const filesFromDirectory = filesResponse.files;
+
+        // Filter only the images
+        const imageFromDirectory = filesFromDirectory.filter(file => file.mimeType.startsWith('image/'));
         
-                    //Uri of the image on the phone (saving in the cache folder)
-                    // const fileUri = `${FileSystem.cacheDirectory}${imageName}`;
-                    // console.log(fileUri);
+        // Convert content URI to file path
+        const filePath = await RNFS.stat(clickedImage)
+            .then((statResult) => {
+                return statResult.originalFilepath;
+            })
+            .catch((err) => {
+                console.error('Error: ', err.message, err.code);
+            });
 
+        const fileUri = filePath.split('/').pop();
+        const fileName = fileUri.split('.')[0];
+        console.log(fileName);
+        const imageName = fileName.split('_')[0];
+        console.log(imageName);
 
-                    // Crate a new folder in the phone's directory if it doesn't exist
-                    const folderUri = `${FileSystem.documentDirectory}`+"driveferidas/";
-                    await FileSystem.makeDirectoryAsync(folderUri, {intermediates: true});
+        // Verify if the image is already in the Drive
+        // const imageExists = imageFromDirectory.filter(file => file.name === imageName);
+        // if (imageExists.length > 0) {
+        //     setLabeled(1);
+        // } else {
+        //     setLabeled(2);
+        // }
+    };
 
-
-                    // Uri of the image on the phone (saving in the phone's directory)
-                    const fileExtension = imageMimeType.split('/')[1];
-                    const fileUri = `${folderUri}${imageName}.${fileExtension}`;
-                    console.log(fileUri);
-        
-                    // Saving the image on the phone
-                    await FileSystem.writeAsStringAsync(fileUri, imageDataBase64, {
-                        encoding: FileSystem.EncodingType.Base64,
-                    });
-                    // Ensure the file has a valid image MIME type before saving to CameraRoll
-                    console.log(fileUri.mimeType);
-                    // if (imageFromDirectory[i].mimeType.startsWith('image/')) {
-                    //     await CameraRoll.saveAsset(fileUri, { type: 'photo', album: 'DriveFeridas' });
-                    // }
-                    CameraRoll.saveAsset(fileUri, {type: 'photo', album: 'DriveFeridas'});
-                    console.log('Image saved on the phone');
-                }
-            } else {
-                console.log('No images found in the specified directory.');
-            }
-
+    const getAllPhotosFromDrive = async () => {
+        // Initialize Google Drive
+        const gdrive = new GDrive();
+        try {
+            gdrive.accessToken = (await GoogleSignin.getTokens()).accessToken;
+            gdrive.fetchTimeout = 3000;
         } catch (error) {
-            console.error('Error while fetching photos from Google Drive: ', error);
-            setError(error);
+            // Not singed in error
+                Alert.alert('Erro', 'Você precisa estar logado para acessar o Drive');
+                setError(error);
+        }
+        
+        const directoryId = '1j0QvjFzd3qQ9zqJlUvPKb3lGeuXUA-Jl';
+        // List the files in the specified folder on Drive
+        const filesResponse = await gdrive.files.list({
+            q: `'${directoryId}' in parents`,
+            fields: 'files(id, name, mimeType)',
+        });
+        // Extract only the files from the response
+        const filesFromDirectory = filesResponse.files;
+    
+        // Filter only the images
+        const imageFromDirectory = filesFromDirectory.filter(file => file.mimeType.startsWith('image/'));
+        Alert.alert('Drive', 'Baixando imagens', [{ text: ' ', onPress: () => {} }], { cancelable: false });
+        if (imageFromDirectory.length > 0) {
+            // Download the images
+
+            for (let i = 0; i < imageFromDirectory.length; i++) {
+                const imageId = imageFromDirectory[i].id;
+                const imageName = imageFromDirectory[i].name;
+                const imageMimeType = imageFromDirectory[i].mimeType;
+                const imageData = await gdrive.files.getBinary(imageId);
+
+                
+                console.log(imageName);
+                const imageDataBase64 = Buffer.from(imageData, 'binary').toString('base64');
+    
+
+
+                // Crate a new folder in the phone's directory if it doesn't exist
+                const folderUri = `${FileSystem.documentDirectory}`+"driveferidas/";
+                await FileSystem.makeDirectoryAsync(folderUri, {intermediates: true});
+
+
+                // Uri of the image on the phone (saving in the phone's directory)
+                const fileExtension = imageMimeType.split('/')[1];
+                const fileUri = `${folderUri}${imageName}.${fileExtension}`;
+
+                // Verify if the phone already has the image 
+                const fileExists = await FileSystem.getInfoAsync(fileUri);
+                if (fileExists.exists) {
+                    continue;
+                }
+    
+                // Saving the image on the phone
+                await FileSystem.writeAsStringAsync(fileUri, imageDataBase64, {
+                    encoding: FileSystem.EncodingType.Base64,
+                });
+                // Ensure the file has a valid image MIME type before saving to CameraRoll
+                console.log(fileUri.mimeType);
+                // if (imageFromDirectory[i].mimeType.startsWith('image/')) {
+                //     await CameraRoll.saveAsset(fileUri, { type: 'photo', album: 'DriveFeridas' });
+                // }
+                CameraRoll.saveAsset(fileUri, {type: 'photo', album: 'DriveFeridas'});
+            }
+        } else {
+            console.log('No images found in the specified directory.');
         }
     };
 
     const getAllPhotos = async () => {
         CameraRoll.getPhotos({
-            first: 20,
+            first: 1000,
             assetType: 'Photos',
             groupName: 'DriveFeridas',
           })
           .then(r => {
             setPhotos(r.edges);
-            //console.log(r.edges);
           })
           .catch((err) => {
-             //Error Loading Images
+            console.log(err);
           });
     };
 
@@ -215,6 +264,10 @@ export default function GaleriaDrive({ navigation }) {
             setUserInfo(info);
             console.log(info);
         } catch(e){
+            // Network error
+            if(e.code == 7){
+                Alert.alert('Erro', 'Verifique sua conexão com a internet');
+            }
             console.log(e);
             setError(e);
         }
@@ -233,10 +286,16 @@ export default function GaleriaDrive({ navigation }) {
     };
 
     useEffect(() => {
-        // getAllPhotosFromDrive();
-        // getAllPhotos();
+        getAllPhotos();
         configureGoogleSignIn();
     }, []);
+
+    useEffect(() => {
+        if(reload){
+            getAllPhotos();
+            setReload(false);
+        }
+    }, [reload]);
 
     return (
         <View style={styles.container}>
@@ -249,19 +308,29 @@ export default function GaleriaDrive({ navigation }) {
                             <Image source={{uri: item.node.image.uri}} style={{width: 184, height: 184}}/>
                             {buttonMode === "on" && clickedIndex === index && (
                                 <View style={{flexDirection: 'row'}}>
-                                    <Pressable style={styles.botaoIcon} onPress={driveButton}>
-                                       <Image source={require('../../assets/google-drive.png')} style={{width: 24, height: 24}}/>
-                                        {/* <FontAwesome5 name='google-drive' size={24} color="white" /> */}
-                                    </Pressable>
-                                    <Pressable style={styles.botaoIcon}>
-                                        <Image source={require('../../assets/whatsapp.png')} style={{width: 24, height: 24}}/>
-                                        {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
-                                    </Pressable>
                                     <Pressable style={styles.botaoIcon} onPress={editButton}>
                                         <Image source={require('../../assets/draw.png')} style={{width: 24, height: 24}}/>
-                                        {/* <FontAwesome5 name='whatsapp' size={24} color="white" /> */}
-                                    </Pressable>                
+                                    </Pressable>
+                                    <Pressable style={styles.botaoIcon} onPress={deleteConfirm}>
+                                        <Image source={require('../../assets/trash.png')} style={{width: 24, height: 24}}/>
+                                    </Pressable>
+                                    {/* {labeled === 0 && (
+                                    <Pressable style={styles.botaoCloud} onPress={verifyIfLabelExists}>
+                                        <Image source={require('../../assets/reload.png')} style={{width: 24, height: 24}}/>
+                                    </Pressable>
+                                    )}
+                                    {labeled === 1 && (
+                                    <Pressable style={styles.botaoCloud}>
+                                        <Image source={require('../../assets/cloud.png')} style={{width: 24, height: 24}}/>
+                                    </Pressable>
+                                    )}
+                                    {labeled === 2 && (
+                                    <Pressable style={styles.botaoCloud}>
+                                        <Image source={require('../../assets/cloud-off.png')} style={{width: 24, height: 24}}/>
+                                    </Pressable>
+                                    )} */}
                                 </View>
+                                
 
                             )}
                             </Pressable>
@@ -269,11 +338,13 @@ export default function GaleriaDrive({ navigation }) {
                         </View>
                     )
                 }}/>
-                
              </View>
             <View style={styles.botoesContainer}>
-                <Pressable style={styles.botao} onPress={exitHandler}>
-                    <Text style={styles.textbotao}>Tela Inicial</Text>
+                <Pressable style={styles.botao} onPress={backScreenNavigation}>
+                    <Image source={require('../../assets/home.png')} style={{width: 30, height: 30}}/>
+                </Pressable>
+                <Pressable style={styles.botao} onPress={reloadHandler}>
+                    <Image source={require('../../assets/reload.png')} style={{width: 30, height: 30}}/>
                 </Pressable>
                 { userInfo.user ? (
                     <Button title="Logout" onPress={logOut}/>
@@ -310,9 +381,8 @@ const styles = StyleSheet.create({
     },
     botao: {
         backgroundColor: '#1E3C40',
-        width: '40%',
         padding: 10,
-        margin: 10,
+        margin: 15,
         alignContent: 'center',
         justifyContent: 'center',
         borderRadius: 10,
@@ -330,11 +400,21 @@ const styles = StyleSheet.create({
         height: '88%',
         alignItems: 'center',
         position: 'relative',
-        
+        backgroundColor: '#dfe1e6',
     },
     botaoIcon: {
         padding: 2,
         backgroundColor: '#1E3C40',
+        // borderRightColor: 'black',
+        // borderRightWidth: 1,
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botaoCloud: {
+        padding: 2,
+        backgroundColor: 'red',
         // borderRightColor: 'black',
         // borderRightWidth: 1,
         width: 50,

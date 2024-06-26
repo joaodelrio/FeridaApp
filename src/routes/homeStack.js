@@ -3,10 +3,12 @@ import { createAppContainer } from 'react-navigation';
 import Home from '../screens/Home';
 import Foto from '../screens/Preview';
 import Galeria from '../screens/Galeria';
-import EditSave from '../screens/EditSave';
-import Medicao from '../screens/Medicao';
 import HomeGaleria from '../screens/HomeGaleria';
 import DriveGaleria from '../screens/DriveGaleria';
+import Edit from '../screens/DrawLabel/Edicao';
+import DriveSave from '../screens/save/DriveSaveImg';
+// import Camera from '../screens/Camera';
+import Config from '../screens/Configuracao';
 
 const screens = {
     Home: {
@@ -15,6 +17,12 @@ const screens = {
             headerShown: false,
         },
     },
+    // Camera: {
+    //     screen: Camera,
+    //     navigationOptions: {
+    //         headerShown: false,
+    //     },
+    // },
     Foto: {
         screen: Foto,
         navigationOptions: {
@@ -47,12 +55,18 @@ const screens = {
             title: 'Drive',
         },
     },
-    EditSave: {
-        screen: EditSave,
+    Edit: {
+        screen: Edit,
         navigationOptions: {
             title: ' ',
         },
-    }
+    },
+    DriveSave: {
+        screen: DriveSave,
+        navigationOptions: {
+            title: 'Drive',
+        },
+    },
 };
 
 const HomeStack = createStackNavigator(screens);
