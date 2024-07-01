@@ -1,37 +1,27 @@
 import React from 'react';
 import { View, Text, StyleSheet, StatusBar, Pressable, Alert, Platform, BackHandler, Button} from 'react-native';
 
+
 export default function Home({ navigation }) {
-    const cameraScreenNavigation = () => {
-        navigation.navigate('Camera');
+    const driveGaleriaScreenNavigation = () => {
+        navigation.navigate('DriveGaleria');
     }
 
     const galeriaScreenNavigation = () => {
-        navigation.navigate('HomeGaleria');
+        navigation.navigate('Galeria');
     }
 
-    const exitHandler = () => {
-        if (Platform.OS === 'android') {
-            Alert.alert('Sair', 'Deseja sair do aplicativo?', [
-                {text: 'Sim', onPress: () => BackHandler.exitApp()},
-                {text: 'Não', onPress: () => console.log('Cancelado')},
-            ]);
-        }
-    };
 
     return (
         <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
-            <Text style={styles.titulo}>Segwound</Text> 
+            {/* <Text style={styles.titulo}>Galeria</Text>  */}
             <View style={styles.botoesContainer}>
-                <Pressable style={styles.botao} onPress={cameraScreenNavigation}>
-                    <Text style={styles.textbotao}>Câmera</Text>
+                <Pressable style={styles.botao} onPress={driveGaleriaScreenNavigation}>
+                    <Text style={styles.textbotao}>Drive</Text>
                 </Pressable>
                 <Pressable style={styles.botao} onPress={galeriaScreenNavigation}>
-                    <Text style={styles.textbotao}>Galeria</Text>
-                </Pressable>
-                <Pressable style={styles.botao} onPress={exitHandler}>
-                    <Text style={styles.textbotao}>Sair</Text>
+                    <Text style={styles.textbotao}>Celular</Text>
                 </Pressable>
             </View>
         </View>
@@ -40,11 +30,7 @@ export default function Home({ navigation }) {
 
 const styles = StyleSheet.create({
     container: {
-
-        paddingTop: 90,
-        paddingBottom: 50,
-        paddingLeft: 30,
-        paddingRight: 30,
+        padding: 5,
         flex: 1,
         alignItems: 'center',
         backgroundColor: '#fff',
@@ -61,22 +47,23 @@ const styles = StyleSheet.create({
     },
     botoesContainer: {
         width: '100%',
-        marginTop: 75,
+        marginTop: 40,
         alignItems: 'center',
     },
     botao: {
-        width: '100%',
-        margin: 20,
-        padding: 15,
+        width: '90%',
+        marginBottom: 20,
+        padding: 20,
         backgroundColor: '#1E3C40',
         alignContent: 'center',
         borderRadius: 9,
+        borderBottomColor: '#000',
     },
     textbotao: {
         color: '#fff',
         fontFamily: 'Roboto',
         textAlign: 'center',
-        fontSize: 17,
+        fontSize: 20,
         fontWeight: 'bold',
     },
 });

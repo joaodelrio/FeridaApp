@@ -42,7 +42,6 @@ export default function CameraAruco({ route, navigation}) {
                     CameraRoll.saveAsset(imageSource, {type: 'photo', album: 'Aruco'});
                     console.log("Imagem salva");
                     navigation.replace('Galeria')
-
                 }},
                 {text: 'Não', onPress: () => console.log('Cancelado')},
             ]);
