@@ -7,7 +7,7 @@ import HomeGaleria from '../screens/HomeGaleria';
 import DriveGaleria from '../screens/DriveGaleria';
 import Edit from '../screens/DrawLabel/Edicao';
 import DriveSave from '../screens/save/DriveSaveImg';
-// import Camera from '../screens/Camera';
+import Camera from '../screens/Camera';
 import Config from '../screens/Configuracao';
 
 const screens = {
@@ -17,12 +17,12 @@ const screens = {
             headerShown: false,
         },
     },
-    // Camera: {
-    //     screen: Camera,
-    //     navigationOptions: {
-    //         headerShown: false,
-    //     },
-    // },
+    Camera: {
+        screen: Camera,
+        navigationOptions: {
+            headerShown: false,
+        },
+    },
     Foto: {
         screen: Foto,
         navigationOptions: {
